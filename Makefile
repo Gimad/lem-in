@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: icanker <marvin@42.fr>                     +#+  +:+       +#+         #
+#    By: sberic <marvin@42.fr>                      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2020/08/14 12:57:19 by icanker           #+#    #+#              #
-#    Updated: 2020/08/14 12:57:25 by icanker          ###   ########.fr        #
+#    Created: 2020/08/14 12:57:19 by sberic            #+#    #+#              #
+#    Updated: 2020/11/11 16:42:03 by sberic           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,41 +14,66 @@ NAME = lem-in
 LIBFT = libft/libft.a
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -g -o2
 
-SRC_DIR = ./src
-OBJ_DIR = ./obj
+FLAGS = -Wall -Wextra -Werror -O2
 
-INCLUDES = -I libft/include -I include
-LIBS = -L libft
+SRC_DIR = src
+OBJ_DIR = obj
 
-SRC = bellman_ford copy_links_and_rooms end_with_error find_new_ways finding_paths hash links main parsing print_map rooms run_ants short_way short_way_utilities short_way_utilities2 suurballe free_lem
-INC = include/lem_in.h
+INCLUDE = -I./include
+INCLUDE += -I./libft/include
 
-SRC_C = $(patsubst %, %.c, $(SRC))
+HEADERS = include/lem_in.h
 
-OBJS = $(addprefix $(OBJ_DIR)/, $(patsubst %, %.o, $(SRC)))
 
-.PHONY: all clean fclean re make_lib
+SRCS = main.c
+SRCS += copy_links_and_rooms.c
+SRCS += end_with_error.c
+SRCS += find_new_ways.c
+SRCS += finding_paths.c
+SRCS += hash.c
+SRCS += links.c
+SRCS += bellman_ford.c
+SRCS += parsing.c
+SRCS += print_map.c
+SRCS += rooms.c
+SRCS += run_ants.c
+SRCS += short_way.c
+SRCS += short_way_utilities.c
+SRCS += short_way_utilities2.c
+SRCS += suurballe.c
+SRCS += free_lem.c
 
-all: $(NAME)
+OBJS = $(SRCS:.c=.o)
 
-$(OBJ_DIR):
-	mkdir -vp obj
+SRCS_PATH = $(addprefix $(SRC_DIR)/,$(SRCS))
+OBJS_PATH = $(addprefix $(OBJ_DIR)/,$(OBJS))
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c Makefile $(INC)
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
-$(NAME): $(OBJ_DIR) $(OBJS)
-	make -C libft
-	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) -o $(NAME)
+.PHONY: clean fclean all re make_lib
+
+all: $(LIBFT) $(NAME)
+
+$(LIBFT) : make_lib
+	@mkdir -p $(OBJ_DIR)
+
+make_lib:
+	@make -C ./libft/
+
+$(NAME): $(OBJS_PATH) $(LIBFT) $(HEADERS)
+	$(CC) -o $@ $(OBJS_PATH) $(LIBFT) $(INCLUDE)
+
+$(OBJ_DIR)/%.o : $(SRC_DIR)/%.c $(HEADERS) Makefile
+	$(CC) -o $@ -c $< $(INCLUDE) $(FLAGS)
 
 clean:
-	/bin/rm -rf $(OBJ_DIR)
-	make clean -C libft/
+	@rm -rf $(OBJ_DIR)
+	@make -C ./libft/ clean
 
 fclean: clean
-	/bin/rm -f $(NAME)
-	make fclean -C libft/
+	@rm -f $(NAME)
+	@make -C ./libft/ fclean
 
 re: fclean all
+
+.PHONY: make_lib clean fclean re
